@@ -1,9 +1,8 @@
-name: Build and Deploy Angular App
+name: Build and Deploy Angular App - Development
 
 on:
   push:
     branches:
-      - main
       - develop
 
 jobs:
@@ -11,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Node
@@ -19,20 +18,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build Angular App
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            npm run build -- --configuration=production
-          else
-            npm run build -- --configuration=dev
-          fi
+      - name: Build Angular app with dev config
+        run: npm run build -- --configuration=dev
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (Development)
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ github.ref == 'refs/heads/main' && 'kaprodapp11' || 'kadevapp11' }}
+          app-name: kadevapp11            # replace with actual App Service name
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV }}
-          package: ./dist/env-demo-angular
+          package: ./dist/env-demo-angular              # replace if your output path is different
