@@ -1,0 +1,38 @@
+name: Build and Deploy Angular App
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Angular App
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            npm run build -- --configuration=production
+          else
+            npm run build -- --configuration=dev
+          fi
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ github.ref == 'refs/heads/main' && 'your-angular-prod' || 'your-angular-dev' }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PROD }}
+          package: ./dist/env-demo-angular
